@@ -1,26 +1,94 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { LLMService } from './services/llm-service';
+import { AuthManager } from './auth/auth-manager';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    const llmService = new LLMService();
+    const authManager = new AuthManager(context);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "javasensei" is now active!');
+    // Register code generation command
+    const generateCodeDisposable = vscode.commands.registerCommand('javadevllm.generateCode', async () => {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showErrorMessage('No active editor found');
+                return;
+            }
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('javasensei.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from JavaSensei!');
-	});
+            const selection = editor.selection;
+            const text = editor.document.getText(selection);
 
-	context.subscriptions.push(disposable);
+            // Show loading indicator
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Generating code...",
+                cancellable: false
+            }, async (progress) => {
+                const response = await llmService.generateCode(text);
+                if (response) {
+                    editor.edit(editBuilder => {
+                        editBuilder.replace(selection, response);
+                    });
+                }
+            });
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to generate code: ${error}`);
+        }
+    });
+
+    // Register code explanation command
+    const explainCodeDisposable = vscode.commands.registerCommand('javadevllm.explainCode', async () => {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showErrorMessage('No active editor found');
+                return;
+            }
+
+            const selection = editor.selection;
+            const text = editor.document.getText(selection);
+
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Analyzing code...",
+                cancellable: false
+            }, async (progress) => {
+                const explanation = await llmService.explainCode(text);
+                if (explanation) {
+                    // Show explanation in a webview
+                    const panel = vscode.window.createWebviewPanel(
+                        'codeExplanation',
+                        'Code Explanation',
+                        vscode.ViewColumn.Beside,
+                        {}
+                    );
+                    panel.webview.html = getWebviewContent(explanation);
+                }
+            });
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to explain code: ${error}`);
+        }
+    });
+
+    context.subscriptions.push(generateCodeDisposable, explainCodeDisposable);
 }
 
-// This method is called when your extension is deactivated
+function getWebviewContent(explanation: string) {
+    return `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Code Explanation</title>
+            </head>
+            <body>
+                <div style="padding: 20px;">
+                    ${explanation}
+                </div>
+            </body>
+        </html>
+    `;
+}
+
 export function deactivate() {}

@@ -1,7 +1,7 @@
 {
   "name": "javasensei",
   "displayName": "JavaSensei",
-  "description": "A VSCode extension for Java code generation, completion, and explanation",
+  "description": "A VSCode extension as AI-powered Java development assistan",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.95.0"
@@ -31,17 +31,22 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.95.0",
-    "@types/mocha": "^10.0.9",
-    "@types/node": "20.x",
-    "@typescript-eslint/eslint-plugin": "^8.10.0",
-    "@typescript-eslint/parser": "^8.7.0",
-    "eslint": "^9.13.0",
-    "typescript": "^5.6.3",
+   "@types/vscode": "^1.85.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3",
     "ts-loader": "^9.5.1",
-    "webpack": "^5.95.0",
+    "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.3.8"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
   }
 }
